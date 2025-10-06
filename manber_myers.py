@@ -5,12 +5,12 @@ class SubstrRank:
         self.index = index
 
 def make_ranks(substr_rank, n):
-    r = 1
+    r = 0
     rank = [-1] * n
     rank[substr_rank[0].index] = r
-    for i in range(n):
+    for i in range(1, n):
         if (substr_rank[i].left_rank != substr_rank[i-1].left_rank or
-			substr_rank[i].right_rank != substr_rank[i-1].right_rank):
+            substr_rank[i].right_rank != substr_rank[i-1].right_rank):
             r += 1
         rank[substr_rank[i].index] = r
     return rank

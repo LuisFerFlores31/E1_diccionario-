@@ -100,6 +100,7 @@ def sais(T):
     return SA
 
 string = "GTCCCGATGTCATGTCAGGA$"
+#string = "mississippi$"
 T = [ord(c) for c in string]
 SA = sais(T)
 print(SA)
