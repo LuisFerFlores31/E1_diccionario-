@@ -21,11 +21,11 @@ map<int, pair<int, int>> getBuckets(const vector<int>& T) {
 
 vector<int> sais(const vector<int>& T) {
     int n = T.size();
-    vector<char> t(n, '_');
-    t[n - 1] = 'S';
+    vector<bool> t(n, false); // false = 'L', true = 'S'
+    t[n - 1] = true; // Último símbolo siempre 'S'
     for (int i = n - 1; i > 0; --i) {
         if (T[i - 1] == T[i]) t[i - 1] = t[i];
-        else t[i - 1] = (T[i - 1] < T[i]) ? 'S' : 'L';
+        else t[i - 1] = (T[i - 1] < T[i]); // true = 'S', false = 'L'
     }
 
     auto buckets = getBuckets(T);
@@ -34,7 +34,7 @@ vector<int> sais(const vector<int>& T) {
     map<int, int> LMS;
     int end = -1;
     for (int i = n - 1; i > 0; --i) {
-        if (t[i] == 'S' && t[i - 1] == 'L') {
+        if (t[i] && !t[i - 1]) { // S y L
             int revoffset = ++count[T[i]];
             SA[buckets[T[i]].second - revoffset] = i;
             if (end != -1) LMS[i] = end;
@@ -45,7 +45,7 @@ vector<int> sais(const vector<int>& T) {
 
     count.clear();
     for (int i = 0; i < n; ++i) {
-        if (SA[i] >= 0 && SA[i] > 0 && t[SA[i] - 1] == 'L') {
+        if (SA[i] >= 0 && SA[i] > 0 && !t[SA[i] - 1]) { // L
             int symbol = T[SA[i] - 1];
             int offset = count[symbol]++;
             SA[buckets[symbol].first + offset] = SA[i] - 1;
@@ -54,7 +54,7 @@ vector<int> sais(const vector<int>& T) {
 
     count.clear();
     for (int i = n - 1; i > 0; --i) {
-        if (SA[i] > 0 && t[SA[i] - 1] == 'S') {
+        if (SA[i] > 0 && t[SA[i] - 1]) { // S
             int symbol = T[SA[i] - 1];
             int revoffset = ++count[symbol];
             SA[buckets[symbol].second - revoffset] = SA[i] - 1;
