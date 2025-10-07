@@ -8,7 +8,7 @@ def getBuckets(T):
         count[c] = count.get(c, 0) + 1
     start = 0
     for c in sorted(count.keys()):
-        buckets[c] = (start, start + count[c])
+        buckets[c] = [start, start + count[c]]  # Solo cambio: usar lista en vez de tupla
         start += count[c]
     return buckets
 
@@ -40,7 +40,7 @@ def sais(T):
             end = i
 
     LMS[len(T) - 1] = len(T) - 1
-    count = {}
+    count.clear()  # Cambio: usar clear() en vez de reasignar
     
     for i in range(len(T)):
         if SA[i] > 0:
@@ -50,7 +50,7 @@ def sais(T):
                 SA[buckets[symbol][0] + offset] = SA[i] - 1
                 count[symbol] = offset + 1
 
-    count = {}
+    count.clear()  # Cambio: usar clear() en vez de reasignar
     for i in range(len(T) - 1, -1, -1):
         if SA[i] > 0:
             if t[SA[i] - 1] == "S":
