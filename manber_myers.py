@@ -43,6 +43,63 @@ def suffix_array(T):
 
     return SA
 
+def get_bwt(text, sa):
+    """Construye la BWT usando el arreglo de sufijos"""
+    bwt = []
+    for i in sa:
+        if i == 0:
+            bwt.append(text[-1])
+        else:
+            bwt.append(text[i - 1])
+    return ''.join(bwt)
+
+def get_first_column(bwt):
+    """Obtiene la primera columna ordenando la BWT"""
+    return ''.join(sorted(bwt))
+
+def get_counts(bwt):
+    """Calcula la tabla C (cuenta de caracteres menores)"""
+    counts = {}
+    # Primero contamos frecuencias
+    for c in sorted(set(bwt)):
+        counts[c] = bwt.count(c)
+    # Luego calculamos las posiciones acumuladas
+    running_sum = 0
+    final_counts = {}
+    for c in sorted(counts.keys()):
+        final_counts[c] = running_sum
+        running_sum += counts[c]
+    return final_counts
+
+def get_occ(bwt, char, pos):
+    """Cuenta ocurrencias del carácter hasta la posición dada"""
+    return bwt[:pos].count(char)
+
+def fm_search(pattern, text, sa):
+    """Busca un patrón usando FM-Index"""
+    bwt = get_bwt(text, sa)
+    first_col = get_first_column(bwt)
+    counts = get_counts(bwt)
+    
+    # Inicializar rango de búsqueda
+    start = 0
+    end = len(bwt)
+    
+    # Buscar el patrón de derecha a izquierda
+    for c in reversed(pattern):
+        if c not in counts:
+            return []
+        
+        # Actualizar rango usando LF-mapping
+        start = counts[c] + get_occ(bwt, c, start)
+        end = counts[c] + get_occ(bwt, c, end)
+        
+        if start >= end:
+            return []
+    
+    # Convertir posiciones BWT a posiciones en el texto original usando SA
+    return [sa[i] for i in range(start, end)]
+
 def main():
     if len(sys.argv) != 2:
         print("Uso: python manber_myers.py <archivo_texto>")
@@ -61,7 +118,15 @@ def main():
         
         print(f"Tiempo de ejecución: {end_time - start_time:.2f} segundos")
         
-        # Opcional: guardar el arreglo de sufijos
+        # Agregar búsqueda
+        pattern = input("Ingrese el patrón a buscar: ")
+        positions = fm_search(pattern, text + '$', SA)
+        
+        if positions:
+            print(f"Patrón '{pattern}' encontrado en las posiciones: {positions}")
+        else:
+            print(f"Patrón '{pattern}' no encontrado en el texto")
+        
         with open(f"{sys.argv[1]}_SA.txt", 'w') as f:
             f.write(','.join(map(str, SA)))
             
