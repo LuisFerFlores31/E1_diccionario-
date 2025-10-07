@@ -1,3 +1,6 @@
+import time
+import sys
+
 class SubstrRank:
     def __init__(self, left_rank=0, right_rank=0, index=0):
         self.left_rank = left_rank
@@ -40,5 +43,32 @@ def suffix_array(T):
 
     return SA
 
-SA = suffix_array("mississippi")
-print(SA)
+def main():
+    if len(sys.argv) != 2:
+        print("Uso: python manber_myers.py <archivo_texto>")
+        sys.exit(1)
+        
+    try:
+        with open(sys.argv[1], 'r', encoding='utf-8') as file:
+            text = file.read().strip()
+            
+        print(f"Procesando archivo: {sys.argv[1]}")
+        print(f"Tamaño del texto: {len(text)} caracteres")
+        
+        start_time = time.time()
+        SA = suffix_array(text)
+        end_time = time.time()
+        
+        print(f"Tiempo de ejecución: {end_time - start_time:.2f} segundos")
+        
+        # Opcional: guardar el arreglo de sufijos
+        with open(f"{sys.argv[1]}_SA.txt", 'w') as f:
+            f.write(','.join(map(str, SA)))
+            
+    except FileNotFoundError:
+        print(f"Error: No se encuentra el archivo {sys.argv[1]}")
+    except Exception as e:
+        print(f"Error: {str(e)}")
+
+if __name__ == "__main__":
+    main()

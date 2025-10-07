@@ -1,3 +1,7 @@
+import time
+import sys
+from memory_profiler import profile
+
 def getBuckets(T):
     count = {}
     buckets = {}
@@ -9,6 +13,7 @@ def getBuckets(T):
         start += count[c]
     return buckets
 
+@profile
 def sais(T):
     t = ["_"] * len(T)
     
@@ -99,8 +104,35 @@ def sais(T):
 
     return SA
 
-string = "GTCCCGATGTCATGTCAGGA$"
-#string = "mississippi$"
-T = [ord(c) for c in string]
-SA = sais(T)
-print(SA)
+def main():
+    if len(sys.argv) != 2:
+        print("Uso: python sais.py <archivo_texto>")
+        sys.exit(1)
+        
+    try:
+        with open(sys.argv[1], 'r', encoding='utf-8') as file:
+            text = file.read().strip() + '$'  # Añadimos el terminador
+            
+        print(f"Procesando archivo: {sys.argv[1]}")
+        print(f"Tamaño del texto: {len(text)} caracteres")
+        
+        # Convertir texto a lista de ordinales
+        T = [ord(c) for c in text]
+        
+        start_time = time.time()
+        SA = sais(T)
+        end_time = time.time()
+        
+        print(f"Tiempo de ejecución: {end_time - start_time:.2f} segundos")
+        
+        # Opcional: guardar el arreglo de sufijos
+        with open(f"{sys.argv[1]}_SA.txt", 'w') as f:
+            f.write(','.join(map(str, SA)))
+            
+    except FileNotFoundError:
+        print(f"Error: No se encuentra el archivo {sys.argv[1]}")
+    except Exception as e:
+        print(f"Error: {str(e)}")
+
+if __name__ == "__main__":
+    main()
