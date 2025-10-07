@@ -1,6 +1,5 @@
 import time
 import sys
-from memory_profiler import profile
 
 def getBuckets(T):
     count = {}
@@ -13,24 +12,26 @@ def getBuckets(T):
         start += count[c]
     return buckets
 
-@profile
 def sais(T):
+    if len(T) <= 1:
+        return list(range(len(T)))
+        
     t = ["_"] * len(T)
-    
     t[len(T) - 1] = "S"
-    for i in range(len(T) - 1, 0, -1):
-        if T[i-1] == T[i]:
-            t[i - 1] = t[i]
+    
+    for i in range(len(T) - 2, -1, -1):
+        if T[i] == T[i + 1]:
+            t[i] = t[i + 1]
         else:
-            t[i - 1] = "S" if T[i-1] < T[i] else "L"
+            t[i] = "S" if T[i] < T[i + 1] else "L"
     
     buckets = getBuckets(T)
-
     count = {}
     SA = [-1] * len(T)
     LMS = {}
     end = None
-    for i in range(len(T) - 1, 0, -1):
+    
+    for i in range(1, len(T)):
         if t[i] == "S" and t[i - 1] == "L":
             revoffset = count[T[i]] = count.get(T[i], 0) + 1
             SA[buckets[T[i]][1] - revoffset] = i
@@ -40,54 +41,9 @@ def sais(T):
 
     LMS[len(T) - 1] = len(T) - 1
     count = {}
+    
     for i in range(len(T)):
-        if SA[i] >= 0:
-            if t[SA[i] - 1] == "L":
-                symbol = T[SA[i] - 1]
-                offset = count.get(symbol, 0)
-                SA[buckets[symbol][0] + offset] = SA[i] - 1
-                count[symbol] = offset + 1
-
-    count = {}
-    for i in range(len(T) - 1, 0, -1):
         if SA[i] > 0:
-            if t[SA[i] - 1] == "S":
-                symbol = T[SA[i] - 1]
-                revoffset = count[symbol] = count.get(symbol, 0) + 1
-                SA[buckets[symbol][1] - revoffset] = SA[i] - 1
-
-    namesp = [-1] * len(T)
-    name = 0
-    prev = None
-    for i in range(len(SA)):
-        if t[SA[i]] == "S" and t[SA[i] - 1] == "L":
-            if prev is not None and T[SA[prev]:LMS[SA[prev]]] != T[SA[i]:LMS[SA[i]]]:
-                name += 1
-            prev = i
-            namesp[SA[i]] = name
-
-    names = []
-    SApIdx = []
-    for i in range(len(T)):
-        if namesp[i] != -1:
-            names.append(namesp[i])
-            SApIdx.append(i)
-
-    if name < len(names) - 1:
-        names = sais(names)
-
-    names = list(reversed(names))
-
-    SA = [-1] * len(T)
-    count = {}
-    for i in range(len(names)):
-        pos = SApIdx[names[i]]
-        revoffset = count[T[pos]] = count.get(T[pos], 0) + 1
-        SA[buckets[T[pos]][1] - revoffset] = pos
-
-    count = {}
-    for i in range(len(T)):
-        if SA[i] >= 0:
             if t[SA[i] - 1] == "L":
                 symbol = T[SA[i] - 1]
                 offset = count.get(symbol, 0)
@@ -95,7 +51,7 @@ def sais(T):
                 count[symbol] = offset + 1
 
     count = {}
-    for i in range(len(T) - 1, 0, -1):
+    for i in range(len(T) - 1, -1, -1):
         if SA[i] > 0:
             if t[SA[i] - 1] == "S":
                 symbol = T[SA[i] - 1]
@@ -111,12 +67,11 @@ def main():
         
     try:
         with open(sys.argv[1], 'r', encoding='utf-8') as file:
-            text = file.read().strip() + '$'  # Añadimos el terminador
+            text = file.read().strip() + '$'
             
         print(f"Procesando archivo: {sys.argv[1]}")
         print(f"Tamaño del texto: {len(text)} caracteres")
         
-        # Convertir texto a lista de ordinales
         T = [ord(c) for c in text]
         
         start_time = time.time()
@@ -125,7 +80,6 @@ def main():
         
         print(f"Tiempo de ejecución: {end_time - start_time:.2f} segundos")
         
-        # Opcional: guardar el arreglo de sufijos
         with open(f"{sys.argv[1]}_SA.txt", 'w') as f:
             f.write(','.join(map(str, SA)))
             
